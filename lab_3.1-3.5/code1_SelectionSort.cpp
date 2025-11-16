@@ -1,3 +1,5 @@
+// СОРТИРОВКА ВЫБОРОМ
+
 #include <iostream>
 using namespace std;
 
