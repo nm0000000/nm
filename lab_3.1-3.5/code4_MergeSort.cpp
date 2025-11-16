@@ -1,3 +1,5 @@
+// СОРТИРОВКА СЛИЯНИЕМ
+
 #include <iostream>
 using namespace std;
 
