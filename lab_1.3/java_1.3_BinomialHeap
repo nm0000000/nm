@@ -1,0 +1,145 @@
+// СОЗДАНИЕ БИНОМИНАЛЬНОЙ КУЧИ НА JAVA
+
+import java.util.ArrayList;
+import java.util.List;
+
+// Вершина биноминального дерева
+class BNode<T extends Comparable<T>> {
+    T key;
+    List<BNode<T>> children = new ArrayList<>();
+    int degree; // Степень вершины (количество детей)
+
+    BNode(T key) {
+        this.key = key;
+        this.degree = 0;
+    }
+
+    // Связываем две вершины, одна становится ребенком другой
+    void merge(BNode<T> other) {
+        other.parent = this;
+        children.add(other);
+        degree++;
+    }
+
+    BNode<T> parent = null;
+}
+
+// Класс биноминальной кучи
+public class BinomialHeap<T extends Comparable<T>> {
+    private List<BNode<T>> roots = new ArrayList<>(); // Список корней биноминальных деревьев
+
+    // Возвращает минимальный элемент кучи
+    public T getMinimum() {
+        if (roots.isEmpty()) {
+            return null;
+        }
+        T min = roots.get(0).key;
+        for (BNode<T> root : roots) {
+            if (root.key.compareTo(min) < 0) {
+                min = root.key;
+            }
+        }
+        return min;
+    }
+
+    // Добавляет элемент в кучу
+    public void insert(T key) {
+        BNode<T> newNode = new BNode<>(key);
+        BinomialHeap<T> singleNodeHeap = new BinomialHeap<>();
+        singleNodeHeap.roots.add(newNode);
+        merge(singleNodeHeap);
+    }
+
+    // Объединяет две биноминальные кучи
+    public void merge(BinomialHeap<T> other) {
+        roots.addAll(other.roots);
+        consolidate();
+    }
+
+    // Консолидация кучи (упрощение структуры)
+    private void consolidate() {
+        List<BNode<T>> newRoots = new ArrayList<>();
+        int maxDegree = Math.max(getMaxDegree(), getMaxDegreeOther());
+        BNode<T>[] auxArray = new BNode[maxDegree + 1];
+
+        for (BNode<T> root : roots) {
+            int d = root.degree;
+            while (auxArray[d] != null) {
+                BNode<T> existingRoot = auxArray[d];
+                if (existingRoot.key.compareTo(root.key) < 0) {
+                    existingRoot.merge(root);
+                    root = existingRoot;
+                } else {
+                    root.merge(existingRoot);
+                }
+                auxArray[d] = null;
+                d++;
+            }
+            auxArray[d] = root;
+        }
+
+        for (BNode<T> node : auxArray) {
+            if (node != null) {
+                newRoots.add(node);
+            }
+        }
+        roots.clear();
+        roots.addAll(newRoots);
+    }
+
+    // Возвращает максимальный порядок дерева в текущей куче
+    private int getMaxDegree() {
+        int maxDegree = 0;
+        for (BNode<T> root : roots) {
+            if (root.degree > maxDegree) {
+                maxDegree = root.degree;
+            }
+        }
+        return maxDegree;
+    }
+
+    // Максимальный порядок другого дерева (используется при объединении)
+    private int getMaxDegreeOther() {
+        return 0; // Других деревьев пока нет
+    }
+
+    // Удаляет минимальный элемент из кучи
+    public T extractMin() {
+        if (roots.isEmpty()) {
+            return null;
+        }
+
+        BNode<T> minNode = roots.get(0);
+        for (BNode<T> root : roots) {
+            if (root.key.compareTo(minNode.key) < 0) {
+                minNode = root;
+            }
+        }
+
+        roots.remove(minNode);
+        BinomialHeap<T> orphanTrees = new BinomialHeap<>();
+        for (BNode<T> child : minNode.children) {
+            child.parent = null;
+            orphanTrees.roots.add(child);
+        }
+        merge(orphanTrees);
+        consolidate();
+        return minNode.key;
+    }
+
+    // Тестовая программа
+    public static void main(String[] args) {
+        BinomialHeap<Integer> heap = new BinomialHeap<>();
+        heap.insert(3);
+        heap.insert(1);
+        heap.insert(2);
+        heap.insert(7);
+        heap.insert(6);
+        heap.insert(4);
+        heap.insert(5);
+
+        System.out.println("Минимальный элемент: " + heap.getMinimum());
+        System.out.println("Извлекаем минимальный элемент: " + heap.extractMin());
+        System.out.println("Новый минимальный элемент: " + heap.getMinimum());
+    }
+}
