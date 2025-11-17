@@ -44,3 +44,58 @@ shortest_distances = dijkstra(graph, start_vertex)
 print(f"Кратчайшие расстояния от вершины '{start_vertex}' до всех остальных:")
 for vertex, dist in shortest_distances.items():
     print(f"{vertex}: {dist}")
+
+
+
+
+
+
+
+# НАХОЖДЕНИЕ КРАТЧАЙШЕГО ПУТИ ГРАФА НА PYTHON
+from collections import deque
+
+def bfs_shortest_path(graph, start, goal):
+    # Словарь для восстановления пути (каждая вершина помечается своим предком)
+    parent = {start: None}
+    # Очередь для поиска в ширину
+    queue = deque([start])
+    
+    while queue:
+        node = queue.popleft()  # Берём первую вершину из очереди
+        
+        # Если дошли до искомой вершины, останавливаемся
+        if node == goal:
+            break
+        
+        # Обрабатываем каждую соседнюю вершину
+        for next_node in graph[node]:
+            if next_node not in parent:
+                parent[next_node] = node  # Сохраняем предыдущего узла
+                queue.append(next_node)   # Добавляем в очередь следующую вершину
+    
+    # Восстанавливаем путь
+    path = []
+    current = goal
+    while current is not None:
+        path.insert(0, current)  # вставляем сначала последнюю вершину
+        current = parent.get(current, None)
+    
+    return path if len(path) > 0 else None
+
+# Пример графа (список смежности)
+graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'D', 'E'],
+    'C': ['A', 'F'],
+    'D': ['B'],
+    'E': ['B', 'F'],
+    'F': ['C', 'E']
+}
+
+# Нахождение кратчайшего пути
+path = bfs_shortest_path(graph, 'A', 'F')
+if path:
+    print("Кратчайший путь:", " -> ".join(path))
+else:
+    print("Путь не найден.")
+
